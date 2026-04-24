@@ -61,6 +61,14 @@ UIGen is a Next.js 15 (App Router) application that lets users describe React co
 - Tailwind CSS for all styling — no inline styles or CSS modules
 - Claude iterates up to 40 tool-call steps per request
 
+## Database
+
+The database schema is defined in `prisma/schema.prisma`. Reference it to understand the structure of data stored in the database.
+
+## Code Style
+
+- Use comments sparingly. Only comment complex code where the logic is non-obvious.
+
 ### Tech Stack
 
 - **Frontend:** React 19, Next.js 15 App Router, TypeScript, Tailwind CSS v4

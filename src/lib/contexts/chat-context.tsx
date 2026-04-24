@@ -3,6 +3,8 @@
 import {
   createContext,
   useContext,
+  useState,
+  useCallback,
   ReactNode,
   useEffect,
 } from "react";
@@ -32,26 +34,37 @@ export function ChatProvider({
   initialMessages = [],
 }: ChatContextProps & { children: ReactNode }) {
   const { fileSystem, handleToolCall } = useFileSystem();
+  const [input, setInput] = useState("");
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    status,
-  } = useAIChat({
+  const { messages, sendMessage, status } = useAIChat({
     api: "/api/chat",
     initialMessages,
-    body: {
-      files: fileSystem.serialize(),
-      projectId,
-    },
-    onToolCall: ({ toolCall }) => {
-      handleToolCall(toolCall);
+    onToolCall: ({ toolCall }: { toolCall: any }) => {
+      handleToolCall({
+        toolName: toolCall.toolName,
+        args: toolCall.input ?? toolCall.args,
+      });
     },
   });
 
-  // Track anonymous work
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value),
+    []
+  );
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!input.trim()) return;
+      sendMessage(
+        { text: input },
+        { body: { files: fileSystem.serialize(), projectId } },
+      );
+      setInput("");
+    },
+    [input, sendMessage, fileSystem, projectId]
+  );
+
   useEffect(() => {
     if (!projectId && messages.length > 0) {
       setHasAnonWork(messages, fileSystem.serialize());
@@ -60,13 +73,7 @@ export function ChatProvider({
 
   return (
     <ChatContext.Provider
-      value={{
-        messages,
-        input: input ?? "",
-        handleInputChange,
-        handleSubmit,
-        status,
-      }}
+      value={{ messages, input, handleInputChange, handleSubmit, status }}
     >
       {children}
     </ChatContext.Provider>
