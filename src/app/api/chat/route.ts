@@ -1,6 +1,6 @@
 import type { FileNode } from "@/lib/file-system";
 import { VirtualFileSystem } from "@/lib/file-system";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import { buildStrReplaceTool } from "@/lib/tools/str-replace";
 import { buildFileManagerTool } from "@/lib/tools/file-manager";
 import { prisma } from "@/lib/prisma";
@@ -28,8 +28,8 @@ export async function POST(req: Request) {
     model,
     system: generationPrompt,
     messages: coreMessages,
-    maxTokens: 10_000,
-    maxSteps: isMockProvider ? 4 : 40,
+    maxOutputTokens: 10_000,
+    stopWhen: stepCountIs(isMockProvider ? 4 : 40),
     onError: (err: any) => {
       console.error(err);
     },
